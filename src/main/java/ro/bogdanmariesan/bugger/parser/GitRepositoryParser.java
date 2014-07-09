@@ -3,12 +3,10 @@ package ro.bogdanmariesan.bugger.parser;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -24,6 +22,11 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevSort;
 import org.eclipse.jgit.revwalk.RevWalk;
+
+import ro.bogdanmariesan.bugger.comparator.CommitModelComparator;
+import ro.bogdanmariesan.bugger.comparator.HotSpotScoreComparator;
+import ro.bogdanmariesan.bugger.model.CommitModel;
+import ro.bogdanmariesan.bugger.model.HotSpotScore;
 
 import com.gitblit.models.PathModel.PathChangeModel;
 import com.gitblit.utils.JGitUtils;
@@ -45,7 +48,7 @@ public class GitRepositoryParser {
             }
         }
 
-        Repository repo = new FileRepository("C:\\workspace\\gateway\\.git");
+        Repository repo = new FileRepository("C:\\workspace\\bugger\\.git");
 
         Git git = new Git(repo);
         RevWalk walk = new RevWalk(repo);
@@ -88,44 +91,49 @@ public class GitRepositoryParser {
             }
         }
 
-        Map<String, Map<Integer, Integer>> commitFilesMap = new TreeMap<String, Map<Integer, Integer>>();
+        Map<String, List<CommitModel>> commitFilesMap = new TreeMap<String, List<CommitModel>>();
         for (RevCommit commit : commitsList) {
-            List<PathChangeModel> fileListInCommit = JGitUtils.getFilesInCommit(repo, commit);
-            for (PathChangeModel file : fileListInCommit) {
-                String fileName = file.name;
-                // System.out.println(fileName);
-                if (actualFileNames.contains(fileName)) {
-                    Integer time = commit.getCommitTime();
-                    if (commitFilesMap.containsKey(fileName)) {
-                        Map<Integer, Integer> scoreMap = commitFilesMap.get(fileName);
-                        if (scoreMap.containsKey(time)) {
-                            Integer currentScore = scoreMap.get(time);
-                            currentScore++;
-                            scoreMap.put(time, currentScore);
+            if (commit.getFullMessage().contains("bug") || commit.getFullMessage().contains("issue") || commit.getFullMessage().contains("fix")) {
+                List<PathChangeModel> fileListInCommit = JGitUtils.getFilesInCommit(repo, commit);
+                for (PathChangeModel file : fileListInCommit) {
+                    String fileName = file.name;
+                    // System.out.println(fileName);
+                    if (actualFileNames.contains(fileName)) {
+                        Integer date = commit.getCommitTime();
+                        if (commitFilesMap.containsKey(fileName)) {
+                            List<CommitModel> commitModelList = commitFilesMap.get(fileName);
+                            commitModelList.add(new CommitModel(date));
+                            commitFilesMap.put(fileName, commitModelList);
                         } else {
-                            Integer currentScore = 1;
-                            scoreMap.put(time, currentScore);
+                            List<CommitModel> commitModelList = new ArrayList<CommitModel>();
+                            commitModelList.add(new CommitModel(date));
+                            commitFilesMap.put(fileName, commitModelList);
                         }
-                    } else {
-                        Map<Integer, Integer> scoreMap = new HashMap<Integer, Integer>();
-                        Integer currentScore = 1;
-                        scoreMap.put(time, currentScore);
-                        commitFilesMap.put(fileName, scoreMap);
                     }
                 }
-            }
 
+            }
         }
 
         double min = firstCommit.getCommitTime();
         double max = lastCommit.getCommitTime();
 
+        List<HotSpotScore> hotspotList = new ArrayList<HotSpotScore>();
+
         for (String file : commitFilesMap.keySet()) {
-            System.out.println(file);
+            List<CommitModel> commitList = commitFilesMap.get(file);
+            Collections.sort(commitList, new CommitModelComparator());
+            double score = extractBugScore(commitList, min, max);
+            if (score >= 5) {
+                hotspotList.add(new HotSpotScore(score, file));
+            }
         }
 
-        // System.out.println((date - min) / (max - min));
+        Collections.sort(hotspotList, new HotSpotScoreComparator());
 
+        for (HotSpotScore hotSpot : hotspotList) {
+            System.out.println(hotSpot);
+        }
     }
 
     private static RevCommit extractFirstCommit(RevWalk rw, Repository repo) throws RevisionSyntaxException, AmbiguousObjectException, IncorrectObjectTypeException, IOException {
@@ -144,15 +152,21 @@ public class GitRepositoryParser {
         return root;
     }
 
-    private static double extractBugScore(Map<Integer, Integer> map) {
+    private static double extractBugScore(List<CommitModel> list, double min, double max) {
+        double score = 0;
+        for (int k = 0; k < list.size(); k++) {
+            score += computeSimpleScore(list.get(k), k, min, max);
+        }
+        return score;
+    }
 
-        SortedSet<Integer> dateSet = new TreeSet<Integer>(map.keySet());
-        Integer firstDate = dateSet.first();
-        Integer lastDate = dateSet.last();
-
-        // (x-min)/(max-min)
-
-        return 0;
+    private static double computeSimpleScore(CommitModel commitModel, int i, double min, double max) {
+        // (x-min)/(max-min) - normalization
+        double t = (commitModel.getDate() - min) / (max - min);
+        double exp = Math.exp(-12 * t * i + 12);
+        double denominator = 1 + exp;
+        double numerator = 1;
+        return numerator / denominator;
     }
 
     public static void listf(String directoryName, List<File> files) {
