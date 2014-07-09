@@ -1,5 +1,7 @@
 package ro.bogdanmariesan.bugger.model;
 
+import java.text.DecimalFormat;
+
 /**
  * 
  * @author Bogdan Mariesan
@@ -34,8 +36,9 @@ public class HotSpotScore {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
+        DecimalFormat df = new DecimalFormat("##0.000000");
         builder.append("HotSpotScore [score=");
-        builder.append(score);
+        builder.append(df.format(score));
         builder.append(", file=");
         builder.append(file);
         builder.append("]");
