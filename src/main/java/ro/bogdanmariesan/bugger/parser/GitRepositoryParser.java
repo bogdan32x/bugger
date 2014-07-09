@@ -36,13 +36,13 @@ public class GitRepositoryParser {
     public static void main(String[] args) throws IOException, NoHeadException, GitAPIException {
 
         List<File> files = new ArrayList<File>();
-        listf("C:\\workspace\\gateway", files);
+        listf("C:\\workspace\\bugger", files);
 
         List<String> actualFileNames = new ArrayList<String>();
         for (File f : files) {
             String fileRaw = f.getAbsolutePath();
             if (fileRaw.contains(".java")) {
-                String fileWithoutHeader = fileRaw.replace("C:\\workspace\\gateway\\", "");
+                String fileWithoutHeader = fileRaw.replace("C:\\workspace\\bugger\\", "");
                 String fileFinal = fileWithoutHeader.replace("\\", "/");
                 actualFileNames.add(fileFinal);
             }
