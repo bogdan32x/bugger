@@ -7,17 +7,17 @@ package ro.bogdanmariesan.bugger.model;
  */
 public class CommitModel {
 
-    private Integer date;
+    private Double date;
 
-    public CommitModel(Integer date) {
+    public CommitModel(Double date) {
         this.setDate(date);
     }
 
-    public Integer getDate() {
+    public Double getDate() {
         return date;
     }
 
-    public void setDate(Integer date) {
+    public void setDate(Double date) {
         this.date = date;
     }
 

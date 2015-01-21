@@ -3,18 +3,26 @@ package ro.bogdanmariesan.bugger.model;
 import java.text.DecimalFormat;
 
 /**
- * 
  * @author Bogdan Mariesan
- *
  */
 public class HotSpotScore {
 
     private Double score;
     private String file;
+    private int bugFixCommits;
 
-    public HotSpotScore(Double score, String file) {
+    public HotSpotScore(Double score, String file, int bugFixCommits) {
         this.setScore(score);
         this.setFile(file);
+        this.setBugFixCommits(bugFixCommits);
+    }
+
+    public int getBugFixCommits() {
+        return bugFixCommits;
+    }
+
+    public void setBugFixCommits(int bugFixCommits) {
+        this.bugFixCommits = bugFixCommits;
     }
 
     public Double getScore() {
@@ -39,6 +47,8 @@ public class HotSpotScore {
         DecimalFormat df = new DecimalFormat("##0.000000");
         builder.append("HotSpotScore [score=");
         builder.append(df.format(score));
+        builder.append(", bugFixCommits=");
+        builder.append(bugFixCommits);
         builder.append(", file=");
         builder.append(file);
         builder.append("]");
