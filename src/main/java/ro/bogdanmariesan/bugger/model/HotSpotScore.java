@@ -5,7 +5,7 @@ import java.text.DecimalFormat;
 /**
  * @author Bogdan Mariesan
  */
-public class HotSpotScore {
+public final class HotSpotScore {
 
     private Double score;
     private String file;
@@ -43,16 +43,8 @@ public class HotSpotScore {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        DecimalFormat df = new DecimalFormat("##0.000000");
-        builder.append("HotSpotScore [score=");
-        builder.append(df.format(score));
-        builder.append(", bugFixCommits=");
-        builder.append(bugFixCommits);
-        builder.append(", file=");
-        builder.append(file);
-        builder.append("]");
-        return builder.toString();
+        final DecimalFormat df = new DecimalFormat("##0.000000");
+        return "HotSpotScore [score=" + df.format(score) + ", bugFixCommits=" + bugFixCommits + ", file=" + file + "]";
     }
 
 }

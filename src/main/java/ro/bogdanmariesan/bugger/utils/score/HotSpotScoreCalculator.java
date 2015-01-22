@@ -14,7 +14,7 @@ import java.util.Map;
 @Component
 public class HotSpotScoreCalculator {
 
-    public List<HotSpotScore> evaluateHotSpotScoreForBranch(Map<String, List<CommitModel>> commitFilesMap, RevCommit firstCommit, RevCommit lastCommit) {
+    public List<HotSpotScore> evaluateHotSpotScoreForBranch(Map<String, List<CommitModel>> commitFilesMap, RevCommit firstCommit, RevCommit lastCommit, Double bugScoreBoundary) {
         final List<HotSpotScore> hotSpotScores = new ArrayList<HotSpotScore>();
 
         final Double min = (double) firstCommit.getCommitTime();
@@ -23,15 +23,15 @@ public class HotSpotScoreCalculator {
         for (final Map.Entry<String, List<CommitModel>> stringListEntry : commitFilesMap.entrySet()) {
             final List<CommitModel> commitList = stringListEntry.getValue();
             Collections.sort(commitList, new CommitModelComparator());
-            final Double score = extractBugScore(commitList, min, max);
-            if (score >= 2) {
-                hotSpotScores.add(new HotSpotScore(score, stringListEntry.getKey(),commitList.size()));
+            final Double actualBugScore = extractBugScore(commitList, min, max);
+            if (actualBugScore >= bugScoreBoundary) {
+                hotSpotScores.add(new HotSpotScore(actualBugScore, stringListEntry.getKey(), commitList.size()));
             }
         }
         return hotSpotScores;
     }
 
-    public double extractBugScore(final List<CommitModel> list, final double min, final double max) {
+    private double extractBugScore(final List<CommitModel> list, final double min, final double max) {
         double score = 0;
         for (int k = 0; k < list.size(); k++) {
             score += computeSimpleScore(list.get(k), k, min, max);
@@ -41,10 +41,10 @@ public class HotSpotScoreCalculator {
 
     private double computeSimpleScore(final CommitModel commitModel, final int i, final double min, final double max) {
         // (x-min)/(max-min) - normalization
-        double normalizedIndex = (commitModel.getDate() - min) / (max - min);
-        double exponent = Math.exp(-12 * normalizedIndex * i + 12);
-        double denominator = 1 + exponent;
-        double numerator = 1;
+        final double normalizedIndex = (commitModel.getDate() - min) / (max - min);
+        final double exponent = Math.exp(-12 * normalizedIndex * i + 12);
+        final double denominator = 1 + exponent;
+        final double numerator = 1;
         return numerator / denominator;
     }
 }

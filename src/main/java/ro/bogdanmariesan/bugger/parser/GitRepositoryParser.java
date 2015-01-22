@@ -26,8 +26,8 @@ import java.util.Map;
 @Service
 public final class GitRepositoryParser {
 
-    public static final String GIT_REPOSITORY_SETTINGS = "\\.git";
-    public static final String PROGRAMMING_LANGUAGE_FILE_EXTENSION = ".java";
+    private static final String GIT_REPOSITORY_SETTINGS = "\\.git";
+    private static final String PROGRAMMING_LANGUAGE_FILE_EXTENSION = ".java";
 
 
     @Autowired
@@ -37,7 +37,7 @@ public final class GitRepositoryParser {
     @Autowired
     private GitCommitHandler gitCommitHandler;
 
-    public void generateHotSpotScore(String repositoryLocation) throws IOException, GitAPIException {
+    public void generateHotSpotScore(String repositoryLocation, Double bugScoreBoundary) throws IOException, GitAPIException {
         final List<File> rawFileNamesInGitRepository = new ArrayList<File>();
         gitRepositoryFileManager.listFilesRecursively(repositoryLocation, rawFileNamesInGitRepository);
 
@@ -50,7 +50,7 @@ public final class GitRepositoryParser {
         final List<RevCommit> commitsList = new ArrayList<RevCommit>();
 
         for (final Ref branch : branches) {
-            //System.out.println(firstCommit.getFullMessage());
+            // System.out.println(firstCommit.getFullMessage());
             // System.out.println(lastCommit.getFullMessage());
             final RevCommit firstCommit = gitCommitHandler.extractFirstCommit(repository);
             final RevCommit lastCommit = gitCommitHandler.extractLastCommit(repository);
@@ -68,7 +68,7 @@ public final class GitRepositoryParser {
                 commitsList.add(commit);
             }
             final Map<String, List<CommitModel>> commitsByFileNameMap = gitCommitHandler.produceDefectCommitMap(repository, commitsList);
-            final List<HotSpotScore> hotSpotScores = hotSpotScoreCalculator.evaluateHotSpotScoreForBranch(commitsByFileNameMap, firstCommit, lastCommit);
+            final List<HotSpotScore> hotSpotScores = hotSpotScoreCalculator.evaluateHotSpotScoreForBranch(commitsByFileNameMap, firstCommit, lastCommit, bugScoreBoundary);
 
             Collections.sort(hotSpotScores, new HotSpotScoreComparator());
 

@@ -11,6 +11,7 @@ import ro.bogdanmariesan.bugger.model.CommitModel;
  */
 public class CommitModelComparator implements Comparator<CommitModel> {
 
+    @Override
     public int compare(CommitModel o1, CommitModel o2) {
         return o1.getDate().compareTo(o2.getDate());
     }

@@ -5,7 +5,7 @@ package ro.bogdanmariesan.bugger.model;
  * @author Bogdan Mariesan
  *
  */
-public class CommitModel {
+public final class CommitModel {
 
     private Double date;
 

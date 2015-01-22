@@ -18,7 +18,7 @@ import java.util.*;
 @Component
 public class GitCommitHandler {
 
-    private static final List<String> hotSpotDictionary = Arrays.asList("bug", "defect", "issue", "fix");
+    private static final List<String> HOT_SPOT_DICTIONARY = Arrays.asList("bug", "defect", "issue", "fix");
 
     public RevCommit extractFirstCommit(Repository repository) throws RevisionSyntaxException, IOException {
         final RevWalk revisionWalk = new RevWalk(repository);
@@ -26,9 +26,9 @@ public class GitCommitHandler {
         final RevCommit root = revisionWalk.parseCommit(headId);
         revisionWalk.sort(RevSort.REVERSE);
         revisionWalk.markStart(root);
-        final RevCommit c = revisionWalk.next();
+        final RevCommit commit = revisionWalk.next();
         revisionWalk.reset();
-        return c;
+        return commit;
     }
 
     public RevCommit extractLastCommit(final Repository repository) throws RevisionSyntaxException, IOException {
@@ -37,33 +37,33 @@ public class GitCommitHandler {
         return revisionWalk.parseCommit(headId);
     }
 
-    public Map<String, List<CommitModel>> produceDefectCommitMap(Repository repository, List<RevCommit> commitsList) {
-           final Map<String, List<CommitModel>> commitFilesMap = new TreeMap<String, List<CommitModel>>();
-           for (final RevCommit commit : commitsList) {
-               if (commitIsDefect(commit)) {
-                   final List<PathModel.PathChangeModel> fileListInCommit = JGitUtils.getFilesInCommit(repository, commit);
-                   for (final PathModel.PathChangeModel file : fileListInCommit) {
-                       final String fileName = file.name;
-                       //     System.out.println(fileName);
-                       final Double date = (double) commit.getCommitTime();
-                       if (commitFilesMap.containsKey(fileName)) {
-                           final List<CommitModel> commitModelList = commitFilesMap.get(fileName);
-                           commitModelList.add(new CommitModel(date));
-                           commitFilesMap.put(fileName, commitModelList);
-                       } else {
-                           final List<CommitModel> commitModelList = new ArrayList<CommitModel>();
-                           commitModelList.add(new CommitModel(date));
-                           commitFilesMap.put(fileName, commitModelList);
-                       }
-                   }
-               }
-           }
-           return commitFilesMap;
-       }
+    public Map<String, List<CommitModel>> produceDefectCommitMap(Repository repository, Iterable<RevCommit> commitsList) {
+        final Map<String, List<CommitModel>> commitFilesMap = new TreeMap<String, List<CommitModel>>();
+        for (final RevCommit commit : commitsList) {
+            if (isCommitADefect(commit)) {
+                final List<PathModel.PathChangeModel> fileListInCommit = JGitUtils.getFilesInCommit(repository, commit);
+                for (final PathModel.PathChangeModel file : fileListInCommit) {
+                    final String fileName = file.name;
+                    //     System.out.println(fileName);
+                    final Double date = (double) commit.getCommitTime();
+                    if (commitFilesMap.containsKey(fileName)) {
+                        final List<CommitModel> commitModelList = commitFilesMap.get(fileName);
+                        commitModelList.add(new CommitModel(date));
+                        commitFilesMap.put(fileName, commitModelList);
+                    } else {
+                        final List<CommitModel> commitModelList = new ArrayList<CommitModel>();
+                        commitModelList.add(new CommitModel(date));
+                        commitFilesMap.put(fileName, commitModelList);
+                    }
+                }
+            }
+        }
+        return commitFilesMap;
+    }
 
-    private boolean commitIsDefect(RevCommit commit) {
+    private boolean isCommitADefect(RevCommit commit) {
         boolean result = false;
-        for (final String dictionaryKey : hotSpotDictionary) {
+        for (final String dictionaryKey : HOT_SPOT_DICTIONARY) {
             if (commit.getFullMessage().contains(dictionaryKey)) {
                 result = true;
                 break;

@@ -16,12 +16,12 @@ public class GitRepositoryParserTest {
 
     @Autowired
     private GitRepositoryParser gitRepositoryParser;
-
-    public static final String GIT_REPOSITORY_LOCATION = "C:\\workspace\\Platform";
+    private static final String GIT_REPOSITORY_LOCATION = "C:\\workspace\\Platform";
+    private static final double BUG_SCORE_BOUNDARY = 2d;
 
     @Test
     public void gitRepositorySanityCheck() throws IOException, GitAPIException {
-        gitRepositoryParser.generateHotSpotScore(GIT_REPOSITORY_LOCATION);
+        gitRepositoryParser.generateHotSpotScore(GIT_REPOSITORY_LOCATION, BUG_SCORE_BOUNDARY);
     }
 
 
