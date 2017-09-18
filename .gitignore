@@ -39,8 +39,12 @@ Icon
 *.classpath
 *.project
 *.prefs
-*.MF
 
 /target
 .idea
 *.iml
+
+*.class
+*.jar
+.gradle
+build

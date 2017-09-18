@@ -6,7 +6,6 @@ import java.util.Comparator;
 
 public class HotSpotScoreComparator implements Comparator<HotSpotScore> {
 
-    @Override
     public int compare(HotSpotScore o1, HotSpotScore o2) {
         return o2.getScore().compareTo(o1.getScore());
     }

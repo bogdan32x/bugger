@@ -14,10 +14,10 @@ import java.io.IOException;
 @ContextConfiguration(classes = BuggerConfiguration.class)
 public class GitRepositoryParserTest {
 
+    private static final String GIT_REPOSITORY_LOCATION = "";
+    private static final double BUG_SCORE_BOUNDARY = 2d;
     @Autowired
     private GitRepositoryParser gitRepositoryParser;
-    private static final String GIT_REPOSITORY_LOCATION = "C:\\workspace\\Platform";
-    private static final double BUG_SCORE_BOUNDARY = 2d;
 
     @Test
     public void gitRepositorySanityCheck() throws IOException, GitAPIException {

@@ -7,7 +7,6 @@ import ro.bogdanmariesan.bugger.model.CommitModel;
 import ro.bogdanmariesan.bugger.model.HotSpotScore;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -15,19 +14,19 @@ import java.util.Map;
 public class HotSpotScoreCalculator {
 
     public List<HotSpotScore> evaluateHotSpotScoreForBranch(Map<String, List<CommitModel>> commitFilesMap, RevCommit firstCommit, RevCommit lastCommit, Double bugScoreBoundary) {
-        final List<HotSpotScore> hotSpotScores = new ArrayList<HotSpotScore>();
+        final List<HotSpotScore> hotSpotScores = new ArrayList<>();
 
         final Double min = (double) firstCommit.getCommitTime();
         final Double max = (double) lastCommit.getCommitTime();
 
-        for (final Map.Entry<String, List<CommitModel>> stringListEntry : commitFilesMap.entrySet()) {
-            final List<CommitModel> commitList = stringListEntry.getValue();
-            Collections.sort(commitList, new CommitModelComparator());
+        commitFilesMap.forEach((key, commitList) -> {
+            commitList.sort(new CommitModelComparator());
             final Double actualBugScore = extractBugScore(commitList, min, max);
             if (actualBugScore >= bugScoreBoundary) {
-                hotSpotScores.add(new HotSpotScore(actualBugScore, stringListEntry.getKey(), commitList.size()));
+                hotSpotScores.add(new HotSpotScore(actualBugScore, key, commitList.size()));
             }
-        }
+        });
+
         return hotSpotScores;
     }
 

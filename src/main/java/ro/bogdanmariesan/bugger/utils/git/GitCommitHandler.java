@@ -38,26 +38,28 @@ public class GitCommitHandler {
     }
 
     public Map<String, List<CommitModel>> produceDefectCommitMap(Repository repository, Iterable<RevCommit> commitsList) {
-        final Map<String, List<CommitModel>> commitFilesMap = new TreeMap<String, List<CommitModel>>();
-        for (final RevCommit commit : commitsList) {
+        final Map<String, List<CommitModel>> commitFilesMap = new TreeMap<>();
+        commitsList.forEach(commit -> {
             if (isCommitADefect(commit)) {
                 final List<PathModel.PathChangeModel> fileListInCommit = JGitUtils.getFilesInCommit(repository, commit);
-                for (final PathModel.PathChangeModel file : fileListInCommit) {
-                    final String fileName = file.name;
-                    //     System.out.println(fileName);
-                    final Double date = (double) commit.getCommitTime();
-                    if (commitFilesMap.containsKey(fileName)) {
-                        final List<CommitModel> commitModelList = commitFilesMap.get(fileName);
-                        commitModelList.add(new CommitModel(date));
-                        commitFilesMap.put(fileName, commitModelList);
-                    } else {
-                        final List<CommitModel> commitModelList = new ArrayList<CommitModel>();
-                        commitModelList.add(new CommitModel(date));
-                        commitFilesMap.put(fileName, commitModelList);
-                    }
-                }
+                fileListInCommit.stream()
+                        .filter(file -> file.name.contains(".java"))
+                        .forEach(file -> {
+                            final String fileName = file.name;
+                            //     System.out.println(fileName);
+                            final Double date = (double) commit.getCommitTime();
+                            if (commitFilesMap.containsKey(fileName)) {
+                                final List<CommitModel> commitModelList = commitFilesMap.get(fileName);
+                                commitModelList.add(new CommitModel(date));
+                                commitFilesMap.put(fileName, commitModelList);
+                            } else {
+                                final List<CommitModel> commitModelList = new ArrayList<>();
+                                commitModelList.add(new CommitModel(date));
+                                commitFilesMap.put(fileName, commitModelList);
+                            }
+                        });
             }
-        }
+        });
         return commitFilesMap;
     }
 

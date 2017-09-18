@@ -21,7 +21,7 @@ public final class HotSpotScore {
         return bugFixCommits;
     }
 
-    public void setBugFixCommits(int bugFixCommits) {
+    private void setBugFixCommits(int bugFixCommits) {
         this.bugFixCommits = bugFixCommits;
     }
 
@@ -29,7 +29,7 @@ public final class HotSpotScore {
         return score;
     }
 
-    public void setScore(Double score) {
+    private void setScore(Double score) {
         this.score = score;
     }
 
@@ -37,7 +37,7 @@ public final class HotSpotScore {
         return file;
     }
 
-    public void setFile(String file) {
+    private void setFile(String file) {
         this.file = file;
     }
 
